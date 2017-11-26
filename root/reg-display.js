@@ -6,13 +6,6 @@ var RegsSortEnum = {
 
 var regs_sort = RegsSortEnum.DEFAULT;
 
-function change_page_to (page) {
-    var frame = document.getElementById ("frame");
-    var page_number = frame.contentDocument.getElementById ("pageNumber");
-    page_number.value = page;
-    page_number.dispatchEvent (new Event ("change"));
-}
-
 function sort_regs (subset) {
     if (regs_sort === RegsSortEnum.ADDRESS) {
         return subset.sort (function (a, b) {
@@ -44,6 +37,39 @@ function sort_regs (subset) {
     }
 }
 
+function change_page_to (page) {
+    var frame = document.getElementById ("frame");
+    var page_number = frame.contentDocument.getElementById ("pageNumber");
+    page_number.value = page;
+    page_number.dispatchEvent (new Event ("change"));
+}
+
+var current_page = "0";
+
+function page_changed (new_page) {
+    current_page = new_page;
+
+    var active_elems = document.getElementsByClassName ("table-primary");
+    for (var i = 0; i < active_elems.length; i++) {
+        active_elems[i].classList.remove ("table-primary");
+    }
+
+    active_elems = document.getElementsByClassName (`on-page-${new_page}`);
+    if (active_elems.length == 0) {
+        return;
+    }
+
+    for (var i = 0; i < active_elems.length; i++) {
+        active_elems[i].classList.add ("table-primary");
+    }
+
+    var table_div = document.getElementById ("reg-list");
+    var offset = active_elems[0].offsetTop - table_div.scrollTop;
+    if (offset < 0 || offset > table_div.offsetHeight) {
+        active_elems[0].scrollIntoView ();
+    }
+}
+
 function display_regs (subset) {
     subset = sort_regs (subset);
 
@@ -69,8 +95,12 @@ function display_regs (subset) {
         reg_row.appendChild (reg_addr);
         reg_row.appendChild (reg_id);
 
+        reg_row.className = `on-page-${subset[i]["page"]}`;
+
         elem.appendChild (reg_row);
     }
+
+    page_changed (current_page);
 }
 
 function filter_regs (needle) {
@@ -127,4 +157,14 @@ function regs_add_listeners () {
             list_regs ();
         }
     );
+
+    var frame = document.getElementById ("frame");
+    var page_number = frame.contentDocument.getElementById ("pageNumber");
+
+    // blegh
+    frame.contentWindow.setInterval (function () {
+        if (page_number.value != current_page) {
+            page_changed (page_number.value);
+        }
+    }, 100);
 }

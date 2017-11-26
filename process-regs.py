@@ -13,11 +13,17 @@ for reg in regs:
 
     fields = [x.strip () for x in reg.split ('\xb7')]
 
+    hex_vals = []
+    for val in fields[4].split (':')[1].split ('-'):
+        if len (val) < 8:
+            val = val.replace ('0x', '0x' + ('0' * (8 - len (val))))
+        hex_vals.append (val)
+
     reg_struct = {
         'id': fields[0],
         'access': fields[1],
         'width': int (fields[2].split (' ')[0]),
-        'addr': fields[4].split (':')[1].replace ("-", " - ")
+        'addr': ' - '.join (hex_vals)
     }
 
     reg_data.append (reg_struct)
