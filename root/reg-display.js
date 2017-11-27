@@ -46,12 +46,18 @@ function change_page_to (page) {
 
 var current_page = "0";
 
+function reg_visible (table_row) {
+    var table_div = document.getElementById ("reg-list");
+    var offset = table_row.offsetTop - table_div.scrollTop;
+    return offset > 0 && offset < table_div.offsetHeight;
+}
+
 function page_changed (new_page) {
     current_page = new_page;
 
     var active_elems = document.getElementsByClassName ("table-primary");
-    for (var i = 0; i < active_elems.length; i++) {
-        active_elems[i].classList.remove ("table-primary");
+    while (active_elems.length > 0) {
+        active_elems[0].classList.remove ("table-primary");
     }
 
     active_elems = document.getElementsByClassName (`on-page-${new_page}`);
@@ -60,14 +66,12 @@ function page_changed (new_page) {
     }
 
     var any_visible = false;
-    var table_div = document.getElementById ("reg-list");
 
     for (var i = 0; i < active_elems.length; i++) {
         active_elems[i].classList.add ("table-primary");
 
         if (!any_visible) {
-            var offset = active_elems[i].offsetTop - table_div.scrollTop;
-            any_visible = offset > 0 && offset < table_div.offsetHeight;
+            any_visible = reg_visible (active_elems[i]);
         }
     }
 
@@ -79,13 +83,28 @@ function page_changed (new_page) {
 function display_regs (subset) {
     subset = sort_regs (subset);
 
+    var restore_id = null;
+    var active_elems = document.getElementsByClassName ("table-primary");
+    for (var i = 0; i < active_elems.length; i++) {
+        if (reg_visible (active_elems[i])) {
+            restore_id = active_elems[i].id;
+            break;
+        }
+    }
+
     var elem = document.getElementById ("reg-list-insert");
 
     while (elem.hasChildNodes ()) {
         elem.removeChild (elem.lastChild);
     }
 
+    var should_restore = false;
+
     for (var i = 0; i < subset.length; i++) {
+        if (!should_restore && subset[i]["id"] == restore_id) {
+            should_restore = true;
+        }
+
         var reg_addr_link = document.createElement ("a");
         reg_addr_link.appendChild (document.createTextNode (subset[i]["addr"]));
 
@@ -102,11 +121,16 @@ function display_regs (subset) {
         reg_row.appendChild (reg_id);
 
         reg_row.className = `on-page-${subset[i]["page"]}`;
+        reg_row.id = subset[i]["id"];
 
         elem.appendChild (reg_row);
     }
 
     page_changed (current_page);
+
+    if (should_restore) {
+        document.getElementById (restore_id).scrollIntoView ();
+    }
 }
 
 function filter_regs (needle) {
