@@ -59,13 +59,19 @@ function page_changed (new_page) {
         return;
     }
 
+    var any_visible = false;
+    var table_div = document.getElementById ("reg-list");
+
     for (var i = 0; i < active_elems.length; i++) {
         active_elems[i].classList.add ("table-primary");
+
+        if (!any_visible) {
+            var offset = active_elems[i].offsetTop - table_div.scrollTop;
+            any_visible = offset > 0 && offset < table_div.offsetHeight;
+        }
     }
 
-    var table_div = document.getElementById ("reg-list");
-    var offset = active_elems[0].offsetTop - table_div.scrollTop;
-    if (offset < 0 || offset > table_div.offsetHeight) {
+    if (!any_visible) {
         active_elems[0].scrollIntoView ();
     }
 }
