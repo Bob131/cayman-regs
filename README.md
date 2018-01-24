@@ -2,7 +2,7 @@ CAYMAN Register Viewer
 ====
 
 A small something to make navigating the register list less confusing. Can be
-viewed [here](https://bob131.so/cayman-regs/).
+viewed [here](https://docs.bob131.so/cayman-regs/).
 
 I wouldn't recommend actually looking at the source code contained within. It's
 about as janky and hacked-together as you can get. It's only intended as a means
